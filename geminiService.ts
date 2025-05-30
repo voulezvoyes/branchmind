@@ -4,7 +4,7 @@ import { GeminiBranchMindResponse, ThoughtNode } from "../types";
 
 // API 키 연결
 const ai = new GoogleGenerativeAI({
-  apiKey: import.meta.env.GEMINI_API_KEY,
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY, //
 });
 
 export async function getBranchMindAIAnalysisFromService(
