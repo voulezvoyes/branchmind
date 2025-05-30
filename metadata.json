@@ -1,0 +1,6 @@
+{
+  "name": "BranchMind",
+  "description": "A note-taking application that helps users record their thoughts, expand them in a branching structure, and get AI-powered insights like summaries, keyword-based classification, and connection suggestions. Uses localStorage for persistence.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

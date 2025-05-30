@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="appPageTitle">BranchMind</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #f7f5f1;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    .container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    #searchInput {
+      width: calc(100% - 24px);
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      background-color: #fff;
+      color: #333;
+    }
+    body.dark-mode #searchInput {
+      background-color: #1e1e1e;
+      border-color: #444;
+      color: #eee;
+    }
+    textarea {
+      width: calc(100% - 24px); 
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      resize: none;
+      background-color: #fff;
+      color: #333;
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+      margin-bottom: 10px; 
+    }
+    body.dark-mode textarea {
+      background-color: #1e1e1e;
+      border-color: #444;
+      color: #eee;
+    }
+    .toggles {
+      margin-top: 10px;
+      margin-bottom: 15px; 
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center; 
+    }
+    .toggles label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .toggles input[type="checkbox"] {
+        margin-right: 6px;
+        transform: scale(1.1);
+        accent-color: #007aff; 
+    }
+    body.dark-mode .toggles input[type="checkbox"] {
+        accent-color: #0d8eff; 
+    }
+
+    .action-buttons-container {
+      display: flex;
+      gap: 10px; /* Space between Record/Update and Cancel Edit */
+      margin-bottom: 10px;
+    }
+
+    .record-btn, .cancel-edit-btn { 
+      flex-grow: 1;
+      padding: 12px 20px;
+      color: white;
+      font-weight: 600;
+      border-radius: 16px;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    .record-btn {
+      background: #222;
+    }
+    .record-btn:hover {
+      background: #444;
+    }
+    body.dark-mode .record-btn {
+        background: #007aff;
+    }
+    body.dark-mode .record-btn:hover {
+        background: #0d8eff;
+    }
+    .record-btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    body.dark-mode .record-btn:disabled {
+      background: #333;
+      color: #777;
+    }
+    .cancel-edit-btn {
+      background: #777; /* A different color for cancel */
+      display: none; /* Hidden by default */
+    }
+    .cancel-edit-btn:hover {
+      background: #999;
+    }
+    body.dark-mode .cancel-edit-btn {
+      background: #555;
+    }
+    body.dark-mode .cancel-edit-btn:hover {
+      background: #666;
+    }
+
+
+    .card {
+      background: rgba(255, 255, 255, 0.8); 
+      border-radius: 20px;
+      padding: 15px 20px; /* Adjusted padding */
+      margin-top: 20px; 
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); 
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
+      border: 1px solid rgba(0,0,0,0.05);
+      position: relative; /* For positioning action buttons */
+    }
+    .card:hover {
+      transform: translateY(-3px); 
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12); 
+    }
+    body.dark-mode .card {
+      background: rgba(45, 45, 45, 0.8); 
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .card-actions {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      display: flex;
+      gap: 8px;
+    }
+    .card-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem; /* Larger icon size */
+      padding: 5px;
+      color: #555;
+      transition: color 0.2s;
+    }
+    .card-action-btn:hover {
+      color: #000;
+    }
+    body.dark-mode .card-action-btn {
+      color: #bbb;
+    }
+    body.dark-mode .card-action-btn:hover {
+      color: #fff;
+    }
+
+    .card .meta {
+      font-size: 0.8rem; 
+      color: #777;
+      margin-bottom: 8px; 
+      padding-right: 70px; /* Space for card actions */
+    }
+    body.dark-mode .card .meta {
+      color: #aaa;
+    }
+    .card .meta a { /* Style for clickable parent ID */
+      color: #007aff;
+      text-decoration: none;
+    }
+    .card .meta a:hover {
+      text-decoration: underline;
+    }
+    body.dark-mode .card .meta a {
+      color: #0d8eff;
+    }
+    .thought-id-value {
+      font-size: 0.75rem; 
+      color: #999; 
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      margin-left: 2px; 
+    }
+    body.dark-mode .thought-id-value {
+      color: #777; 
+    }
+    .card:hover .thought-id-value {
+      opacity: 1;
+    }
+    .card .user-thought {
+      font-weight: 400; 
+      margin-bottom: 12px; 
+      white-space: pre-wrap; 
+      line-height: 1.5;
+    }
+    .card .ai-section {
+      background: rgba(0, 0, 0, 0.03); 
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.9rem;
+      margin-top: 12px; 
+      border-left: 3px solid #007aff;
+    }
+    body.dark-mode .card .ai-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-left-color: #0d8eff;
+    }
+    .ai-section strong {
+      color: #333;
+    }
+    body.dark-mode .ai-section strong {
+      color: #e0e0e0;
+    }
+     .ai-section p {
+        margin: 0 0 6px 0;
+    }
+    .ai-section p:last-child {
+        margin-bottom: 0;
+    }
+    .control-toggles-container { 
+        margin-left: auto;
+        display: flex;
+        gap: 12px; 
+    }
+
+    #statusMessages {
+        margin-top: 15px;
+        text-align: center;
+    }
+    .loading-message, .error-message {
+        padding: 10px 15px;
+        margin-top: 10px; 
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: inline-block; 
+    }
+    .loading-message {
+        background-color: rgba(0, 122, 255, 0.1);
+        color: #007aff;
+        border: 1px solid rgba(0, 122, 255, 0.2);
+    }
+    body.dark-mode .loading-message {
+        background-color: rgba(13, 142, 255, 0.15);
+        color: #0d8eff;
+        border: 1px solid rgba(13, 142, 255, 0.3);
+    }
+    .error-message {
+        background-color: rgba(255, 59, 48, 0.1);
+        color: #ff3b30;
+        border: 1px solid rgba(255, 59, 48, 0.2);
+    }
+     body.dark-mode .error-message {
+        background-color: rgba(255, 69, 58, 0.15);
+        color: #ff453a;
+        border: 1px solid rgba(255, 69, 58, 0.3);
+    }
+
+    /* Popup Styles (Shared for Welcome, Parent Selector, and Language Selector) */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
+      display: none; /* Hidden by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 9998; /* Below popup card but above other content */
+    }
+    /* Make body content invisible when language selection popup is active and no language selected yet */
+    body.initial-load .container {
+      visibility: hidden;
+    }
+    .popup-card {
+      position: relative; 
+      width: 90%;
+      max-width: 500px; 
+      max-height: 80vh; 
+      overflow-y: auto; 
+      background: rgba(255, 255, 255, 0.95); 
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px); 
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 1.5rem 2rem; 
+      text-align: left; 
+      z-index: 9999;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    body.dark-mode .popup-card {
+      background: rgba(30, 30, 30, 0.95);
+      color: #eee;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .popup-card h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    body.dark-mode .popup-card h3 {
+        color: #eee;
+    }
+    .popup-card p {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+    .popup-card ul {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0.75rem;
+    }
+    .popup-card li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+    .popup-card li strong { 
+        font-weight: 600;
+    }
+    .popup-card .popup-buttons {
+      display: flex;
+      justify-content: center; /* Center buttons for language selector */
+      gap: 10px; 
+      margin-top: 1.5rem;
+    }
+    .popup-card button {
+      padding: 0.7rem 1.2rem; 
+      border: none;
+      border-radius: 10px; 
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem; 
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+    }
+    .popup-card button.confirm-btn {
+      background-color: #222;
+      color: white;
+    }
+    .popup-card button.confirm-btn:hover {
+      background-color: #444;
+    }
+    body.dark-mode .popup-card button.confirm-btn {
+      background-color: #007aff;
+    }
+    body.dark-mode .popup-card button.confirm-btn:hover {
+      background-color: #0d8eff;
+    }
+    .popup-card button.cancel-btn {
+      background-color: #e0e0e0; 
+      color: #333;
+    }
+    .popup-card button.cancel-btn:hover {
+      background-color: #ccc;
+    }
+    body.dark-mode .popup-card button.cancel-btn {
+      background-color: #4a4a4a;
+      color: #eee;
+    }
+     body.dark-mode .popup-card button.cancel-btn:hover {
+      background-color: #5a5a5a;
+    }
+    #welcomePopup .popup-buttons, #parentSelectorModal .popup-buttons {
+        justify-content: flex-end; /* Align buttons to the right for these popups */
+    }
+    /* Parent Selector Specific Styles */
+    #parentSelectorList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 200px; /* Limit height and make scrollable */
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    body.dark-mode #parentSelectorList {
+      border-color: #444;
+    }
+    #parentSelectorList li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 0.9rem;
+    }
+    #parentSelectorList li:last-child {
+      border-bottom: none;
+    }
+    #parentSelectorList li:hover {
+      background-color: #f0f0f0;
+    }
+    #parentSelectorList li.selected {
+      background-color: #007aff;
+      color: white;
+    }
+    body.dark-mode #parentSelectorList li {
+      border-bottom-color: #333;
+    }
+    body.dark-mode #parentSelectorList li:hover {
+      background-color: #2a2a2a;
+    }
+    body.dark-mode #parentSelectorList li.selected {
+      background-color: #0d8eff;
+      color: white;
+    }
+    #parentSelectorList .parent-id {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    #parentSelectorList .parent-snippet {
+      color: #555;
+    }
+    body.dark-mode #parentSelectorList .parent-snippet {
+      color: #bbb;
+    }
+    #parentSelectorList li.selected .parent-snippet {
+      color: #e0e0e0; /* Ensure snippet is visible on selection */
+    }
+    /* Language Selector Specific Styles */
+    #languageSelectorPopup .popup-buttons button {
+        min-width: 120px; /* Ensure buttons have a decent width */
+        font-size: 1rem;
+    }
+
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.2.0"
+  }
+}
+</script>
+</head>
+<body class="initial-load">
+  <div class="container">
+    <h1 id="appTitle">BranchMind 🌿</h1>
+    <input type="search" id="searchInput" /> <!-- Search Input -->
+    <textarea id="thoughtInput" rows="4" placeholder="생각을 자유롭게 남겨보세요."></textarea>
+    <div class="toggles">
+      <label><input type="checkbox" id="toggleSummaryCheckbox" checked /> <span id="summaryToggleLabel">요약</span></label>
+      <label><input type="checkbox" id="toggleTaggingCheckbox" checked /> <span id="taggingToggleLabel">분류 (키워드)</span></label>
+      <label><input type="checkbox" id="toggleConnectCheckbox" checked /> <span id="connectToggleLabel">연결 제안</span></label>
+      <div class="control-toggles-container">
+        <label class="lang-toggle"><input type="checkbox" id="langToggleCheckbox" /> <span id="langToggleLabelText">Switch to English</span></label>
+        <label class="theme-toggle"><input type="checkbox" id="themeToggle" /> <span id="darkModeToggleLabel">다크 모드</span></label>
+      </div>
+    </div>
+    <div class="action-buttons-container">
+        <button id="recordButton" class="record-btn">기록하기 🖊️</button>
+        <button id="cancelEditButton" class="cancel-edit-btn" style="display: none;"></button>
+    </div>
+    <div id="statusMessages"></div>
+    <div id="thoughtCards"></div>
+  </div>
+
+  <!-- Language Selector Popup -->
+  <div id="languageSelectorPopupOverlay" class="popup-overlay">
+    <div id="languageSelectorPopup" class="popup-card">
+        <h3 id="languageSelectorPopupTitle" style="text-align: center;">언어 선택 / Select Language</h3>
+        <div class="popup-buttons">
+            <button id="selectKoreanButton" class="confirm-btn">한국어 (Korean)</button>
+            <button id="selectEnglishButton" class="confirm-btn">English</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Onboarding Welcome Popup -->
+  <div id="welcomePopupOverlay" class="popup-overlay">
+    <div id="welcomePopup" class="popup-card">
+      <p id="onboardingIntro"></p>
+      <h3 id="onboardingWhyHeader"></h3>
+      <p id="onboardingWhyBody"></p>
+      <h3 id="onboardingFeaturesHeader"></h3>
+      <ul id="onboardingFeaturesList">
+        <li id="onboardingFeatureSummary"></li>
+        <li id="onboardingFeatureCategorize"></li>
+        <li id="onboardingFeatureConnect"></li>
+      </ul>
+      <p id="onboardingPhilosophyBody"></p>
+      <p id="onboardingFreedomBody"></p>
+      <div class="popup-buttons">
+          <button id="closePopupButton" class="confirm-btn"></button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Parent Thought Selector Modal -->
+  <div id="parentSelectorModalOverlay" class="popup-overlay">
+      <div id="parentSelectorModal" class="popup-card">
+          <h3 id="parentSelectorTitle"></h3>
+          <ul id="parentSelectorList">
+              {/* Parent thoughts will be populated here by JS */}
+          </ul>
+          <div class="popup-buttons">
+              <button id="cancelParentSelectButton" class="cancel-btn"></button>
+              <button id="confirmParentSelectButton" class="confirm-btn"></button>
+          </div>
+      </div>
+  </div>
+
+  <script type="module" src="index.tsx"></script>
+</body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>
