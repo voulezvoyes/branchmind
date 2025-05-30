@@ -4,9 +4,10 @@ WORKDIR /app
 COPY . .
 RUN npm install && npm run build
 
-# Step 2: use serve to host the static site on port 8080
+# Step 2: serve the static site
 FROM node:18
 WORKDIR /app
 COPY --from=build /app/dist /app
 RUN npm install -g serve
+EXPOSE 8080
 CMD ["serve", "-s", ".", "-l", "8080"]
